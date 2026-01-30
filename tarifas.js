@@ -306,6 +306,39 @@ function calcularCurvaReferenciaPctExtendida(anio, tipo, datosGrafico, anioAnt) 
         return (acumulado - 1) * 100;
     });
 }
+document.getElementById("btn-exportar").addEventListener("click", () => {
+    // 1. Identificamos qué queremos exportar
+    // Si tienes un div envolviendo todo el contenido usa su ID, si no, usamos el body
+    const contenido = document.getElementById("contenido-a-exportar") || document.querySelector(".container") || document.body;
+
+    // 2. Obtenemos datos para el nombre del archivo
+    const nombreCliente = document.getElementById("filtro-cliente").value || "Cliente";
+    const anioAnalizado = document.getElementById("filtro-anio-kpi").value || "Analisis";
+    const fechaActual = new Date().toISOString().slice(0, 10);
+
+    // 3. Configuración del PDF
+    const opciones = {
+        margin:       [0.5, 0.5], // Márgenes [arriba/abajo, izquierda/derecha]
+        filename:     `Reporte_${nombreCliente}_${anioAnalizado}_${fechaActual}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2,           // Mayor resolución
+            useCORS: true,      // Evita problemas con imágenes externas
+            letterRendering: true
+        },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    // 4. Ejecutar la descarga
+    // Ocultamos temporalmente los botones para que no salgan en el PDF
+    const botones = document.querySelectorAll('button');
+    botones.forEach(btn => btn.style.display = 'none');
+
+    html2pdf().set(opciones).from(contenido).save().then(() => {
+        // Volvemos a mostrar los botones después de generar el PDF
+        botones.forEach(btn => btn.style.display = 'inline-block');
+    });
+});
 
 function cargarSelectClientes() {
     const s = document.getElementById("filtro-cliente");
@@ -319,3 +352,4 @@ function cargarSelectClientes() {
 document.getElementById("btn-limpiar").addEventListener("click", () => location.reload());
 
 cargarDatos();
+
